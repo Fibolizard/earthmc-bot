@@ -1,19 +1,29 @@
 import discord
-from discord.ext import commands
 from discord import app_commands
-DISCORD_TOKEN = 'MTI1MzAyMjExMzY3NDAzOTM2Nw.GyoajF.ni8MPd_nqKvSJ7XCDseec8bZnAhoXYTtLeJESo'
-client = discord.Client(command_prefix='S', intents=discord.Intents.all())
-tree = app_commands.CommandTree(client)
+from discord.ext import commands
+import requests
 
+DISCORD_TOKEN = 'MTI1MzAyMjExMzY3NDAzOTM2Nw.GyoajF.ni8MPd_nqKvSJ7XCDseec8bZnAhoXYTtLeJESo'
+client = commands.Bot(command_prefix='S', intents=discord.Intents.all())
+#player_data = requests.get("https://api.earthmc.net/v2/aurora/residents/").json()
 @client.event
 async def on_ready():
-    await tree.sync(guild=discord.Object(id=671050960449044490))
+
     print("encendido")
-@tree.command(
-    name="test",
-    description="My first application Command",
-    guild=discord.Object(id=671050960449044490)
-)
-async def test(interaction):
-    await interaction.response.send_message("probando")
+@client.hybrid_group(fallback="get", description="Te permite saber cuando una ciudad caerá")
+async def fall(ctx, town):
+
+   # mayor = player_data[town]
+   # mayor_last_online = player_data['mayor']['lastOnline']
+
+    town_data = requests.get(f"https://api.earthmc.net/v2/aurora/towns/{town}").json()
+    amount_residents = len(town_data['residents'])
+  #  if residents == 1:
+    embed = discord.Embed(title=f"¿Cuándo caerá {town}?",
+                                 description=f"**Cantidad de residentes**: {amount_residents}",
+                                colour=discord.Colour.brand_green())
+    embed.add_field(name='Alcalde', value=f'test')
+    await ctx.channel.send(embed=embed)
+
+
 client.run(DISCORD_TOKEN)
